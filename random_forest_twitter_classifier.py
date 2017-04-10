@@ -2,6 +2,9 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.ensemble import RandomForestClassifier
 import pandas as pd
 import numpy as np
+from sklearn.cross_validation import cross_val_score, KFold
+from sklearn import metrics
+from ggplot import *
 
 # create data frame containing your data, each column can be accessed # by df['column   name']
 df_bot = pd.read_csv('bots_data.csv',encoding='latin-1')
@@ -60,6 +63,20 @@ rf = RandomForestClassifier()
 # train model
 rf.fit(train[features], trainTargets)
 
+y_pred = rf.predict(test[features])
+fpr,tpr , _ = metrics.roc_curve(testTargets,y_pred)
+
+df_roc = pd.DataFrame(dict(fpr=fpr, tpr=tpr))
+g = ggplot(df_roc, aes(x='fpr', y='tpr')) +\
+    geom_line() +\
+    geom_abline(linetype='dashed')
+print(g)
 
 
-print(rf.score(test[features],testTargets))
+
+# print(rf.score(test[features],testTargets))
+
+K = 10  # folds
+R2 = cross_val_score(rf, train, y=trainTargets, cv=KFold(trainTargets.size, K), n_jobs=1).mean()
+print("The %d-Folds estimate of the coefficient of determination is R2 = %s"
+      % (K, R2))
