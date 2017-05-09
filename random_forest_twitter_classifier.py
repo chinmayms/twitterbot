@@ -7,6 +7,8 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report,confusion_matrix
+from sklearn.model_selection import GridSearchCV
+from sklearn.ensemble import GradientBoostingClassifier
 
 
 #Load training data into a dataframe
@@ -112,9 +114,20 @@ df = df[['followers_count','friends_count','listedcount','verified','statuses_co
 #USe train test split to split data into training and testing sets
 X_train,X_test,y_train,y_test = train_test_split(df.drop('bot',axis=1),df['bot'],test_size=0.1)
 
+# construct parameter grid
+param_grid = {'max_depth': [1, 3, 6, 9, 12, 15, None],
+              'max_features': ['auto','log2',None],
+              'min_samples_split': [2,4,6,8,10],
+              'min_samples_leaf': [1, 3, 6, 9, 12, 15],
+              'bootstrap': [True, False],
+              'criterion': ['gini', 'entropy']}
+
 
 #Declare Random Forest classifier Object
-rf = RandomForestClassifier(n_estimators=100,criterion='entropy')
+rf = GridSearchCV(RandomForestClassifier(), param_grid = param_grid).fit(X_train, y_train)
+
+# assess predictive accuracy
+predict = grid_search.predict(X_test)
 
 # train model by calling fit method
 rf.fit(X_train,y_train)
